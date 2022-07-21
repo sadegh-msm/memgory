@@ -1,2 +1,1 @@
-# go-redis
- simple redis database eith golang 
+# simple-go-redis
