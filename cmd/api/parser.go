@@ -1,27 +1,26 @@
-package command
+package api
 
 import (
 	"bufio"
 	"fmt"
 	"os"
-	"simple-redis/databeses"
+	"simple-redis/cmd/databeses"
 	"strings"
 )
 
 type Command struct {
-	Container *databeses.Databases
+	Container *databeses.Storage
 	Reader    *bufio.Reader
 }
 
-func New(dbs *databeses.Databases) *Command {
+func NewCmd(dbs *databeses.Storage) *Command {
 	return &Command{
 		Container: dbs,
 		Reader:    bufio.NewReader(os.Stdin),
 	}
 }
 
-// infinite for loop for reading and serving the commands
-
+// CmdHandler infinite for loop for reading and serving the commands
 func (cmd *Command) CmdHandler() error {
 	cmd.Container.CreateDefaultDatabase()
 	for {

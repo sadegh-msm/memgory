@@ -7,7 +7,7 @@ import (
 
 // writes a database to a file
 
-func SaveToFile(store *Store, writer io.Writer) error {
+func SaveToFile(store *Database, writer io.Writer) error {
 	encoder := gob.NewEncoder(writer)
 
 	return encoder.Encode(*store)
@@ -15,7 +15,7 @@ func SaveToFile(store *Store, writer io.Writer) error {
 
 // reads from a file to database
 
-func ReadFromFile(reader io.Reader) (*Store, error) {
+func ReadFromFile(reader io.Reader) (*Database, error) {
 	db := NewDb("")
 
 	decoder := gob.NewDecoder(reader)
