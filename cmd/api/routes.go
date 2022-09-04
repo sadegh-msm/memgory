@@ -38,10 +38,10 @@ func NewRouter(e *echo.Echo) *echo.Echo {
 	e.GET("/get", cmd.Get)
 	e.DELETE("/del", cmd.Del)
 	e.POST("/use", cmd.UseDB)
-	e.GET("/keyregex", cmd.KeyRegex)
+	e.POST("/keyregex", cmd.KeyRegex)
 	e.GET("/listdata", cmd.ListData)
 	e.GET("/listdb", cmd.ListDBs)
-	e.GET("/save", cmd.Save)
+	e.POST("/save", cmd.Save)
 	e.POST("/load", cmd.Load)
 
 	return e

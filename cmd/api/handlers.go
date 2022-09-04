@@ -156,33 +156,41 @@ func (cmd *Command) KeyRegex(c echo.Context) error {
 }
 
 func (cmd *Command) ListDBs(c echo.Context) error {
-	type request struct {
-		StorageName string `json:"dbname"`
-	}
+	storageName := c.QueryParam("name")
 
-	req := request{}
-
-	err := c.Bind(&req)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, Response{
-			Err:     true,
-			Message: "bad request",
-		})
-	}
-	log.Printf("%v\n", req)
+	log.Printf("%v\n", storageName)
 
 	dbNames := cmd.listDBs()
 
 	return c.JSON(http.StatusOK, Response{
 		Err:     false,
-		Message: fmt.Sprintf("all results from %s", req.StorageName),
+		Message: fmt.Sprintf("all results from %s", storageName),
 		Data:    dbNames,
 	})
 }
 
 func (cmd *Command) ListData(c echo.Context) error {
+	databaseName := c.QueryParam("name")
+	log.Printf("%v\n", databaseName)
+
+	dbData, err := cmd.listData(databaseName)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, Response{
+			Err:  true,
+			Data: err,
+		})
+	}
+
+	return c.JSON(http.StatusOK, Response{
+		Err:     false,
+		Message: fmt.Sprintf("data from %s database", databaseName),
+		Data:    dbData,
+	})
+}
+
+func (cmd *Command) Load(c echo.Context) error {
 	type request struct {
-		DatabaseName string `json:"dbname"`
+		FilePath string `json:"pattern"`
 	}
 
 	req := request{}
@@ -196,13 +204,47 @@ func (cmd *Command) ListData(c echo.Context) error {
 	}
 	log.Printf("%v\n", req)
 
-	dbData := cmd.listData()
-}
+	_, err = cmd.load(req.FilePath)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, Response{
+			Err:  true,
+			Data: err,
+		})
+	}
 
-func (cmd *Command) Load(c echo.Context) error {
-	return nil
+	return c.JSON(http.StatusAccepted, Response{
+		Err:     false,
+		Message: fmt.Sprintf("file loaded from %s", req.FilePath),
+	})
 }
 
 func (cmd *Command) Save(c echo.Context) error {
-	return nil
+	type request struct {
+		FilePath string `json:"pattern"`
+	}
+
+	req := request{}
+
+	err := c.Bind(&req)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, Response{
+			Err:     true,
+			Message: "bad request",
+		})
+	}
+	log.Printf("%v\n", req)
+
+	_, err = cmd.save(req.FilePath)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, Response{
+			Err:  true,
+			Data: err,
+		})
+	}
+
+	return c.JSON(http.StatusAccepted, Response{
+		Err:     false,
+		Message: fmt.Sprintf("file saved in %s", req.FilePath),
+	})
 }
+

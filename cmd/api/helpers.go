@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"simple-redis/db"
-	"strings"
 )
 
 var LastSetDB string
@@ -124,16 +123,17 @@ func (cmd *Command) listData(databaseName string) ([]string, error) {
 		return nil, err
 	}
 
-	cmd.Container.
+	data := cmd.Container.GetDb(databaseName).ListData()
+
+	return data, nil
 }
 
-func (cmd *Command) save(command string) (interface{}, error) {
+func (cmd *Command) save(filePath string) (interface{}, error) {
 	data, err := cmd.checkDB()
 	if err != nil {
 		return data, err
 	}
 
-	filePath := strings.Split(command, " ")[1]
 	file, err := os.Create(filePath)
 	if err != nil {
 		return "", err
@@ -146,8 +146,7 @@ func (cmd *Command) save(command string) (interface{}, error) {
 	return "", nil
 }
 
-func (cmd *Command) load(command string) (interface{}, error) {
-	filePath := strings.Split(command, " ")[1]
+func (cmd *Command) load(filePath string) (interface{}, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return "", err

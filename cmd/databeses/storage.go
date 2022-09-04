@@ -12,8 +12,6 @@ type Storage struct {
 	Count           int
 }
 
-// TODO: add default
-
 // NewStorage creates a new databases for all databases in one container
 func NewStorage() *Storage {
 	defaultDb := db.NewDb("default")
