@@ -3,9 +3,13 @@ package api
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"simple-redis/cmd/databeses"
 )
 
 func NewRouter(e *echo.Echo) *echo.Echo {
+	db := databeses.NewStorage()
+	cmd := NewCmd(db)
+
 	// use logger middleware to log events on server
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "time=${time_unix}, " +
@@ -28,15 +32,17 @@ func NewRouter(e *echo.Echo) *echo.Echo {
 	// use body limit middleware to stop requests that want to store much data in database
 	e.Use(middleware.BodyLimit("10K"))
 	// use rate limiter to stop high loads
-	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(50)))
+	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(10)))
 
-	e.POST("/set", Set)
-	e.GET("/get", Get)
-	e.DELETE("/del", Del)
-	e.GET("/keys", Keys)
-	e.GET("/list", List)
-	e.GET("/save", Save)
-	e.POST("/load", Load)
+	e.POST("/set", cmd.Set)
+	e.GET("/get", cmd.Get)
+	e.DELETE("/del", cmd.Del)
+	e.POST("/use", cmd.UseDB)
+	e.GET("/keyregex", cmd.KeyRegex)
+	e.GET("/listdata", cmd.ListData)
+	e.GET("/listdb", cmd.ListDBs)
+	e.GET("/save", cmd.Save)
+	e.POST("/load", cmd.Load)
 
 	return e
 }

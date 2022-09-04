@@ -14,8 +14,7 @@ type Database struct {
 	*sync.RWMutex
 }
 
-// creating new db
-
+// NewDb creating new db
 func NewDb(name string) *Database {
 	return &Database{
 		Name: name,
@@ -23,47 +22,45 @@ func NewDb(name string) *Database {
 	}
 }
 
-// setting and getting and deleting data in db and using lock to stop race conditions
+// Set setting and getting and deleting data in db and using lock to stop race conditions
+func (db *Database) Set(key string, any interface{}) string {
+	//db.Lock()
+	//defer db.Unlock()
 
-func (store *Database) Set(key string, any interface{}) string {
-	//store.Lock()
-	//defer store.Unlock()
-
-	store.Data[key] = any
+	db.Data[key] = any
 
 	return ""
 }
 
-func (store *Database) Get(key string) (value interface{}, err error) {
-	//store.RLock()
-	//defer store.RUnlock()
+func (db *Database) Get(key string) (value interface{}, err error) {
+	//db.RLock()
+	//defer db.RUnlock()
 
-	if value, exist := store.Data[key]; exist {
+	if value, exist := db.Data[key]; exist {
 		return value, nil
 	}
 
 	return "", errors.New(fmt.Sprintf("Given key:%s doesn't exist", key))
 }
 
-func (store *Database) Delete(key string) error {
-	//store.Lock()
-	//defer store.Unlock()
+func (db *Database) Delete(key string) error {
+	//db.Lock()
+	//defer db.Unlock()
 
-	if _, exist := store.Data[key]; exist {
-		delete(store.Data, key)
+	if _, exist := db.Data[key]; exist {
+		delete(db.Data, key)
 		return nil
 	}
 
 	return errors.New(fmt.Sprintf("Given key:%s doesn't exist", key))
 }
 
-// finding matches with regular expressions and returning a list of matches
-
-func (store *Database) Regex(character string) (keys []string, err error) {
+// Regex finding matches with regular expressions and returning a list of matches
+func (db *Database) Regex(character string) (keys []string, err error) {
 	//store.Lock()
 	//defer store.Unlock()
 
-	for key, _ := range store.Data {
+	for key := range db.Data {
 		matchString, err := regexp.MatchString(character, key)
 		if err != nil {
 			return nil, err
@@ -77,8 +74,15 @@ func (store *Database) Regex(character string) (keys []string, err error) {
 	return keys, nil
 }
 
-// exiting from application
+func (db *Database) ListData() (values []string) {
+	for key := range db.Data {
+		values = append(values, fmt.Sprintf("%s -> %s\n", key, db.Data[key]))
+	}
 
+	return values
+}
+
+// Exit exiting from application
 func Exit() {
 	fmt.Println("exiting database !!")
 	os.Exit(1)

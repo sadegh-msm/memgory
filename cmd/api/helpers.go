@@ -8,17 +8,22 @@ import (
 	"strings"
 )
 
+var LastSetDB string
+
 var NoDatabaseSelected = errors.New("no database selected")
 
 func (cmd *Command) checkDB() (interface{}, error) {
 	if cmd.Container.CurrentDatabase == nil {
 		return "", NoDatabaseSelected
 	}
+
 	return nil, nil
 }
 
 func (cmd *Command) set(databaseName, key, value string) (interface{}, error) {
-	cmd.use(databaseName)
+	if databaseName != "" {
+		cmd.use(databaseName)
+	}
 
 	data, err := cmd.checkDB()
 	if err != nil {
@@ -30,13 +35,18 @@ func (cmd *Command) set(databaseName, key, value string) (interface{}, error) {
 	return returnedValue, nil
 }
 
-func (cmd *Command) get(command string) (interface{}, error) {
+func (cmd *Command) get(databaseName, key string) (interface{}, error) {
+	if databaseName != "" {
+		cmd.use(databaseName)
+	} else {
+		cmd.use(LastSetDB)
+	}
+
 	data, err := cmd.checkDB()
 	if err != nil {
 		return data, err
 	}
 
-	key := strings.Split(command, " ")[1]
 	returnedValue, err := cmd.Container.CurrentDatabase.Get(key)
 	if err != nil {
 		return "", err
@@ -45,13 +55,18 @@ func (cmd *Command) get(command string) (interface{}, error) {
 	return returnedValue, nil
 }
 
-func (cmd *Command) del(command string) (interface{}, error) {
+func (cmd *Command) del(databaseName, key string) (interface{}, error) {
+	if databaseName != "" {
+		cmd.use(databaseName)
+	} else {
+		cmd.use(LastSetDB)
+	}
+
 	data, err := cmd.checkDB()
 	if err != nil {
 		return data, err
 	}
 
-	key := strings.Split(command, " ")[1]
 	err = cmd.Container.CurrentDatabase.Delete(key)
 	if err != nil {
 		return "", err
@@ -60,13 +75,18 @@ func (cmd *Command) del(command string) (interface{}, error) {
 	return "", nil
 }
 
-func (cmd *Command) keys(command string) (interface{}, error) {
+func (cmd *Command) keyRegex(databaseName, pattern string) (interface{}, error) {
+	if databaseName != "" {
+		cmd.use(databaseName)
+	} else {
+		cmd.use(LastSetDB)
+	}
+
 	data, err := cmd.checkDB()
 	if err != nil {
 		return data, err
 	}
 
-	pattern := strings.Split(command, " ")[1]
 	keys, err := cmd.Container.CurrentDatabase.Regex(pattern)
 	if err != nil {
 		return "", err
@@ -75,16 +95,12 @@ func (cmd *Command) keys(command string) (interface{}, error) {
 	return keys, nil
 }
 
-func (cmd *Command) use(dbName string) (interface{}, error) {
+func (cmd *Command) use(dbName string) {
 	cmd.Container.CurrentDatabase = cmd.Container.GetDb(dbName)
-	if err != nil {
-		return "", err
-	}
-
-	return "", nil
+	LastSetDB = cmd.Container.GetDb(dbName).Name
 }
 
-func (cmd *Command) list() (interface{}, error) {
+func (cmd *Command) listDBs() []string {
 	var databaseList []string
 
 	dataBases := cmd.Container.ListAllDatabases()
@@ -93,7 +109,22 @@ func (cmd *Command) list() (interface{}, error) {
 	}
 	fmt.Println("count: ", cmd.Container.Count)
 
-	return databaseList, nil
+	return databaseList
+}
+
+func (cmd *Command) listData(databaseName string) ([]string, error) {
+	if databaseName != "" {
+		cmd.use(databaseName)
+	} else {
+		cmd.use(LastSetDB)
+	}
+
+	_, err := cmd.checkDB()
+	if err != nil {
+		return nil, err
+	}
+
+	cmd.Container.
 }
 
 func (cmd *Command) save(command string) (interface{}, error) {
