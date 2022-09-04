@@ -6,6 +6,7 @@ import (
 	"simple-redis/db"
 )
 
+// Storage is container for all databases
 type Storage struct {
 	AllDatabases    []*db.Database
 	CurrentDatabase *db.Database
@@ -45,6 +46,7 @@ func (dbs *Storage) ListAllDatabases() []*db.Database {
 	return dbs.AllDatabases
 }
 
+// GetDb will return the database by the given name
 func (dbs *Storage) GetDb(name string) *db.Database {
 	var flag bool
 	var findedDb *db.Database
@@ -65,14 +67,14 @@ func (dbs *Storage) GetDb(name string) *db.Database {
 	return newDb
 }
 
-// this will add default database to databases list
-
+// CreateDefaultDatabase will add default database to databases list
 func (dbs *Storage) CreateDefaultDatabase() {
 	database := db.NewDb("default")
 	dbs.AllDatabases = append(dbs.AllDatabases, database)
 	dbs.Count++
 }
 
+// CheckDBExists checks for a databse with same name exists or not
 func (dbs *Storage) CheckDBExists(name string) bool {
 	for _, database := range dbs.AllDatabases {
 		if database.Name == name {

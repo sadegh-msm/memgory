@@ -8,6 +8,7 @@ import (
 
 const port = ":8080"
 
+// starting point
 func main() {
 	e := echo.New()
 

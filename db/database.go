@@ -74,6 +74,7 @@ func (db *Database) Regex(character string) (keys []string, err error) {
 	return keys, nil
 }
 
+// ListData lists all data from a database to a slice of string
 func (db *Database) ListData() (values []string) {
 	for key := range db.Data {
 		values = append(values, fmt.Sprintf("%s -> %s\n", key, db.Data[key]))

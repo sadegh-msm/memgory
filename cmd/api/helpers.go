@@ -11,22 +11,26 @@ var LastSetDB string
 
 var NoDatabaseSelected = errors.New("no database selected")
 
-func (cmd *Command) checkDB() (interface{}, error) {
+// checks if database pointer is nil or not
+func (cmd *Command) checkDB() error {
 	if cmd.Container.CurrentDatabase == nil {
-		return "", NoDatabaseSelected
+		return NoDatabaseSelected
 	}
 
-	return nil, nil
+	return nil
 }
 
+// setting new data in database by database name, key and value
+// if the name of database is empty string ("") will do the operation on last set database
+// if no database have been set it will do operation on default database
 func (cmd *Command) set(databaseName, key, value string) (interface{}, error) {
 	if databaseName != "" {
 		cmd.use(databaseName)
 	}
 
-	data, err := cmd.checkDB()
+	err := cmd.checkDB()
 	if err != nil {
-		return data, err
+		return nil, err
 	}
 
 	returnedValue := cmd.Container.CurrentDatabase.Set(key, value)
@@ -34,6 +38,9 @@ func (cmd *Command) set(databaseName, key, value string) (interface{}, error) {
 	return returnedValue, nil
 }
 
+// getting new data in database by database name, key
+// if the name of database is empty string ("") will do the operation on last set database
+// if no database have been set it will do operation on default database
 func (cmd *Command) get(databaseName, key string) (interface{}, error) {
 	if databaseName != "" {
 		cmd.use(databaseName)
@@ -41,39 +48,46 @@ func (cmd *Command) get(databaseName, key string) (interface{}, error) {
 		cmd.use(LastSetDB)
 	}
 
-	data, err := cmd.checkDB()
+	err := cmd.checkDB()
 	if err != nil {
-		return data, err
+		return nil, err
 	}
 
 	returnedValue, err := cmd.Container.CurrentDatabase.Get(key)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	return returnedValue, nil
 }
 
-func (cmd *Command) del(databaseName, key string) (interface{}, error) {
+// deleting new data in database by database name, key
+// if the name of database is empty string ("") will do the operation on last set database
+// if no database have been set it will do operation on default database
+func (cmd *Command) del(databaseName, key string) error {
 	if databaseName != "" {
 		cmd.use(databaseName)
 	} else {
 		cmd.use(LastSetDB)
 	}
 
-	data, err := cmd.checkDB()
+	err := cmd.checkDB()
 	if err != nil {
-		return data, err
+		return err
 	}
 
 	err = cmd.Container.CurrentDatabase.Delete(key)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return "", nil
+	return nil
 }
 
+// searching for data in database by database name, pattern
+// search with the pattern through all data in a database and finds the matching data
+// if the name of database is empty string ("") will do the operation on last set database
+// if no database have been set it will do operation on default database
 func (cmd *Command) keyRegex(databaseName, pattern string) (interface{}, error) {
 	if databaseName != "" {
 		cmd.use(databaseName)
@@ -81,9 +95,9 @@ func (cmd *Command) keyRegex(databaseName, pattern string) (interface{}, error) 
 		cmd.use(LastSetDB)
 	}
 
-	data, err := cmd.checkDB()
+	err := cmd.checkDB()
 	if err != nil {
-		return data, err
+		return nil, err
 	}
 
 	keys, err := cmd.Container.CurrentDatabase.Regex(pattern)
@@ -94,11 +108,15 @@ func (cmd *Command) keyRegex(databaseName, pattern string) (interface{}, error) 
 	return keys, nil
 }
 
+// using new data in database by database name, key and value
+// if the name of database is empty string ("") will do the operation on last set database
+// if no database have been set it will do operation on default database
 func (cmd *Command) use(dbName string) {
 	cmd.Container.CurrentDatabase = cmd.Container.GetDb(dbName)
 	LastSetDB = cmd.Container.GetDb(dbName).Name
 }
 
+// will list all databases from a container
 func (cmd *Command) listDBs() []string {
 	var databaseList []string
 
@@ -111,6 +129,7 @@ func (cmd *Command) listDBs() []string {
 	return databaseList
 }
 
+// will list all data in one database
 func (cmd *Command) listData(databaseName string) ([]string, error) {
 	if databaseName != "" {
 		cmd.use(databaseName)
@@ -118,7 +137,7 @@ func (cmd *Command) listData(databaseName string) ([]string, error) {
 		cmd.use(LastSetDB)
 	}
 
-	_, err := cmd.checkDB()
+	err := cmd.checkDB()
 	if err != nil {
 		return nil, err
 	}
@@ -128,33 +147,35 @@ func (cmd *Command) listData(databaseName string) ([]string, error) {
 	return data, nil
 }
 
-func (cmd *Command) save(filePath string) (interface{}, error) {
-	data, err := cmd.checkDB()
+// will save all data to a file for other usages
+func (cmd *Command) save(filePath string) error {
+	err := cmd.checkDB()
 	if err != nil {
-		return data, err
+		return err
 	}
 
 	file, err := os.Create(filePath)
 	if err != nil {
-		return "", err
+		return err
 	}
 	err = db.SaveToFile(cmd.Container.CurrentDatabase, file)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return "", nil
+	return nil
 }
 
-func (cmd *Command) load(filePath string) (interface{}, error) {
+// will load the saved file to the server
+func (cmd *Command) load(filePath string) error {
 	file, err := os.Open(filePath)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	database, err := db.ReadFromFile(file)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	for _, oldDatabase := range cmd.Container.AllDatabases {
@@ -164,5 +185,5 @@ func (cmd *Command) load(filePath string) (interface{}, error) {
 	}
 	cmd.Container.CurrentDatabase = database
 
-	return "", nil
+	return nil
 }

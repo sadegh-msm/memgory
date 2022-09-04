@@ -48,7 +48,7 @@ func (cmd *Command) Set(c echo.Context) error {
 }
 
 func (cmd *Command) Get(c echo.Context) error {
-	dbname := c.QueryParam("db")
+	dbname := c.QueryParam("name")
 	key := c.QueryParam("key")
 
 	log.Printf("%v %v\n", dbname, key)
@@ -85,7 +85,7 @@ func (cmd *Command) Del(c echo.Context) error {
 	}
 	log.Printf("%v\n", req)
 
-	data, err := cmd.del(req.DbName, req.Key)
+	err = cmd.del(req.DbName, req.Key)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Response{
 			Err:  true,
@@ -96,7 +96,6 @@ func (cmd *Command) Del(c echo.Context) error {
 	return c.JSON(http.StatusOK, Response{
 		Err:     false,
 		Message: fmt.Sprintf("deleted %s with value %s", req.Key, cmd.Container.CurrentDatabase.Data[req.Key]),
-		Data:    data,
 	})
 }
 
@@ -204,7 +203,7 @@ func (cmd *Command) Load(c echo.Context) error {
 	}
 	log.Printf("%v\n", req)
 
-	_, err = cmd.load(req.FilePath)
+	err = cmd.load(req.FilePath)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Response{
 			Err:  true,
@@ -234,7 +233,7 @@ func (cmd *Command) Save(c echo.Context) error {
 	}
 	log.Printf("%v\n", req)
 
-	_, err = cmd.save(req.FilePath)
+	err = cmd.save(req.FilePath)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Response{
 			Err:  true,
@@ -247,4 +246,3 @@ func (cmd *Command) Save(c echo.Context) error {
 		Message: fmt.Sprintf("file saved in %s", req.FilePath),
 	})
 }
-

@@ -5,16 +5,14 @@ import (
 	"io"
 )
 
-// writes a database to a file
-
+// SaveToFile writes a database to a file
 func SaveToFile(store *Database, writer io.Writer) error {
 	encoder := gob.NewEncoder(writer)
 
 	return encoder.Encode(*store)
 }
 
-// reads from a file to database
-
+// ReadFromFile reads from a file to server
 func ReadFromFile(reader io.Reader) (*Database, error) {
 	db := NewDb("")
 

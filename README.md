@@ -1,1 +1,1 @@
-# simple-go-redis
+# go-redis

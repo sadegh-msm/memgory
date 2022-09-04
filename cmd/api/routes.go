@@ -12,7 +12,7 @@ func NewRouter(e *echo.Echo) *echo.Echo {
 
 	// use logger middleware to log events on server
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "time=${time_unix}, " +
+		Format: "time=${time_rfc3339}, " +
 			"uri=${uri}, " +
 			"status=${status}, " +
 			"error=${error}, " +
@@ -35,12 +35,12 @@ func NewRouter(e *echo.Echo) *echo.Echo {
 	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(10)))
 
 	e.POST("/set", cmd.Set)
-	e.GET("/get", cmd.Get)
+	e.GET("/get", cmd.Get) // get value from key by query parameters {"name" for database name} {"key" for data key}
 	e.DELETE("/del", cmd.Del)
 	e.POST("/use", cmd.UseDB)
 	e.POST("/keyregex", cmd.KeyRegex)
-	e.GET("/listdata", cmd.ListData)
-	e.GET("/listdb", cmd.ListDBs)
+	e.GET("/listdata", cmd.ListData) // get list of values from database name by query parameters {"name" for database name}
+	e.GET("/listdb", cmd.ListDBs)    // get list of databases from storage name by query parameters {"name" for storage name}
 	e.POST("/save", cmd.Save)
 	e.POST("/load", cmd.Load)
 
