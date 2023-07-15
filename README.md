@@ -1,4 +1,4 @@
-# go-redis
+# go-cache
 > http/rest implementation of redis in golang
 
 ## introduction 
